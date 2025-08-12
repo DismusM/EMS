@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
+// @ts-ignore - types for better-sqlite3 may not be present in this environment
 import Database from 'better-sqlite3';
 import dotenv from 'dotenv';
 import * as schema from './schema';

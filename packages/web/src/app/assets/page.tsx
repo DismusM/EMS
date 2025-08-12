@@ -39,7 +39,7 @@ export default function AssetsPage() {
         <AssetList
           key={listVersion} // Use key to force re-render and re-fetch
           token={authState.token}
-          userRole={authState.user.role.id as any}
+          userRole={authState.user.role.id}
           onCreateAsset={handleCreateAsset}
           onEditAsset={handleEditAsset}
         />

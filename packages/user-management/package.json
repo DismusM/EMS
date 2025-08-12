@@ -11,13 +11,18 @@
   },
   "peerDependencies": {
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "@mantine/core": "^7.10.2"
+  },
+  "dependencies": {
+    "@ems/ui": "workspace:*",
+    "@ems/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/node": "^20",
     "eslint": "^8",
-    "typescript": "^5",
-    "@mantine/core": "^7.10.2"
+    "typescript": "^5"
   }
 }

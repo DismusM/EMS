@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { AuthState, User } from '@ems/shared';
-import { getCurrentUserProfile } from '@ems/user-management/src/api/apiClient';
+import { getCurrentUserProfile } from '@ems/user-management';
 
 const initialState: AuthState = {
   isAuthenticated: false,

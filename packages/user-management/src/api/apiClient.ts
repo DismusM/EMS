@@ -1,7 +1,7 @@
 import { User } from '@ems/shared';
 
-// In a real app, this would come from an environment variable
-const API_BASE_URL = 'http://localhost:3001/api';
+// Read from env; default to localhost for dev
+const API_BASE_URL = process.env.NEXT_PUBLIC_USER_API_URL || 'http://localhost:3001/api';
 
 export async function login(email: string, password: string): Promise<{ token: string }> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
