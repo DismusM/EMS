@@ -1,0 +1,27 @@
+{
+  "name": "ems-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A fullstack, modular Equipment Maintenance System",
+  "scripts": {
+    "dev": "turbo dev --parallel",
+    "build": "turbo build",
+    "test": "turbo test",
+    "db:generate:user-service": "pnpm --filter @ems/user-management-service run db:generate"
+  },
+  "keywords": [
+    "monorepo",
+    "turborepo",
+    "pnpm",
+    "react",
+    "nextjs",
+    "express",
+    "typescript"
+  ],
+  "author": "Jules",
+  "license": "ISC",
+  "devDependencies": {
+    "turbo": "^2.0.4"
+  },
+  "packageManager": "pnpm@9.4.0"
+}

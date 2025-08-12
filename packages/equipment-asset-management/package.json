@@ -1,0 +1,24 @@
+{
+  "name": "@ems/equipment-asset-management",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p .",
+    "lint": "eslint . --ext .ts,.tsx",
+    "dev": "tsc -p . --watch"
+  },
+  "peerDependencies": {
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "typescript": "^5",
+    "@mantine/core": "^7.10.2",
+    "@mantine/dates": "^7.10.2"
+  }
+}
