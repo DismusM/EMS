@@ -3,3 +3,4 @@
 
 export * from './components/LoginForm';
 export * from './components/CreateUserForm';
+export * from './api/apiClient';

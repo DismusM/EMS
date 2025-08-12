@@ -52,7 +52,8 @@ export const AssetForm = ({ opened, onClose, token, onFormSuccess, assetToEdit }
     setError(null);
     setLoading(true);
 
-    const assetData = { name, model, serialNumber, location, status, purchaseDate: purchaseDate?.toISOString() };
+    const normalizedStatus: Asset['status'] = status ?? 'OPERATIONAL';
+    const assetData = { name, model, serialNumber, location, status: normalizedStatus, purchaseDate: purchaseDate?.toISOString() };
 
     try {
       if (isEditMode) {

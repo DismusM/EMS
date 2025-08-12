@@ -40,7 +40,8 @@ router.post('/', async (req: Request, res: Response) => {
     const newAsset = await assetService.createAsset(req.body);
     res.status(201).json(newAsset);
   } catch (error) {
-    if (error.message.includes('UNIQUE constraint failed')) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('UNIQUE constraint failed')) {
         return res.status(409).json({ message: 'An asset with this serial number already exists.' });
     }
     res.status(500).json({ message: 'Error creating asset.' });

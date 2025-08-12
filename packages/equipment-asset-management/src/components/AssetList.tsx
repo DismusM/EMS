@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Asset } from '@ems/shared';
+import { Asset, RoleId } from '@ems/shared';
 import { getAssets, deleteAsset } from '../api/apiClient';
 import { Table, Button, Group, Alert, Title } from '@mantine/core';
 import { PageLayout } from '@ems/ui';
@@ -9,7 +9,7 @@ import { PageLayout } from '@ems/ui';
 interface AssetListProps {
   token: string;
   // In a real app, role would be derived from the token/auth context
-  userRole: 'admin' | 'asset_manager' | 'client';
+  userRole: RoleId;
   onEditAsset: (asset: Asset) => void;
   onCreateAsset: () => void;
 }

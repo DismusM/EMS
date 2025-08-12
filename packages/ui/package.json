@@ -11,13 +11,13 @@
   },
   "peerDependencies": {
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "@mantine/core": "^7.10.2"
   },
   "devDependencies": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "typescript": "^5",
-    "@mantine/core": "^7.10.2"
+    "typescript": "^5"
   }
 }

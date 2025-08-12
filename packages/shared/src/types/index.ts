@@ -1,7 +1,17 @@
 export interface Role {
-  id: string;
+  id: RoleId;
   name: string;
 }
+
+export type RoleId = 'admin' | 'supervisor' | 'technician' | 'asset_manager' | 'client';
+
+export const ROLE_IDS: Record<Uppercase<RoleId>, RoleId> = {
+  ADMIN: 'admin',
+  SUPERVISOR: 'supervisor',
+  TECHNICIAN: 'technician',
+  ASSET_MANAGER: 'asset_manager',
+  CLIENT: 'client',
+};
 
 export interface User {
   id: string;
