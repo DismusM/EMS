@@ -1,7 +1,7 @@
 import '@mantine/core/styles.css';
 import React from 'react';
-import { MantineProvider, ColorSchemeScript } from '@mantine/core';
-import { AuthProvider } from '../context/AuthContext';
+import { ColorSchemeScript } from '@mantine/core';
+import { RootProviders } from '../components/RootProviders';
 
 export const metadata = {
   title: 'EMS - Equipment Maintenance System',
@@ -20,9 +20,7 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-        <MantineProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </MantineProvider>
+        <RootProviders>{children}</RootProviders>
       </body>
     </html>
   );

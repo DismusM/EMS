@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { AuthState, User } from '@ems/shared';
-import { getCurrentUserProfile } from '@ems/user-management';
+import { getCurrentUserProfile, refreshAccessToken, logout as apiLogout } from '@ems/user-management';
 
 const initialState: AuthState = {
   isAuthenticated: false,
@@ -12,47 +12,59 @@ const initialState: AuthState = {
 
 export const AuthContext = createContext<{
   authState: AuthState;
-  login: (token: string) => void;
+  loading: boolean;
+  login: (token: string, user: User) => void;
   logout: () => void;
 }>({
   authState: initialState,
+  loading: true,
   login: () => {},
   logout: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authState, setAuthState] = useState<AuthState>(initialState);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for a token in local storage on initial load
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      fetchProfile(token);
-    }
+    const initializeAuth = async () => {
+      try {
+        const { accessToken } = await refreshAccessToken();
+        if (accessToken) {
+          const userProfile = await getCurrentUserProfile(accessToken);
+          setAuthState({ isAuthenticated: true, user: userProfile, token: accessToken });
+        }
+      } catch (error) {
+        console.log('No active session found.');
+        setAuthState(initialState);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
-  const fetchProfile = async (token: string) => {
+  const login = (token: string, user: User) => {
+    setAuthState({
+      isAuthenticated: true,
+      token,
+      user,
+    });
+  };
+
+  const logout = async () => {
     try {
-        const userProfile = await getCurrentUserProfile(token);
-        setAuthState({ isAuthenticated: true, user: userProfile, token });
+      await apiLogout();
     } catch (error) {
-        console.error("Failed to fetch profile, logging out.", error);
-        logout();
+      console.error('Failed to logout from server:', error);
+    } finally {
+      setAuthState(initialState);
     }
-  };
-
-  const login = (token: string) => {
-    localStorage.setItem('authToken', token);
-    fetchProfile(token);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    setAuthState(initialState);
   };
 
   return (
-    <AuthContext.Provider value={{ authState, login, logout }}>
+    <AuthContext.Provider value={{ authState, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

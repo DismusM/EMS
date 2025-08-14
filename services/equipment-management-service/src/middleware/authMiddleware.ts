@@ -13,7 +13,10 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
   }
 
   const token = authHeader.split(' ')[1];
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET || 'dev-secret';
+  if (!process.env.JWT_SECRET) {
+    console.warn('JWT_SECRET is not defined. Using development default.');
+  }
 
   if (!secret) {
     console.error('JWT_SECRET is not defined.');

@@ -10,11 +10,18 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [opened, { toggle }] = useDisclosure();
   const { authState, logout } = useAuth();
 
-  // Determine which links to show based on user role
+  // Beginner note:
+  // We show different menu links depending on WHO you are.
+  // The table below is encoded as a mapping from link -> allowed roles.
+  // This makes it very easy to tweak permissions in one place.
   const navLinks = [
-    { label: 'Dashboard', href: '/', roles: ['admin', 'supervisor', 'technician', 'asset_manager', 'client'] },
+    { label: 'Dashboard', href: '/dashboard', roles: ['admin', 'supervisor', 'technician', 'asset_manager', 'client'] },
     { label: 'Assets', href: '/assets', roles: ['admin', 'supervisor', 'technician', 'asset_manager', 'client'] },
+    { label: 'My Profile', href: '/profile', roles: ['admin', 'supervisor', 'technician', 'asset_manager', 'client'] },
     { label: 'User Management', href: '/users', roles: ['admin'] },
+    { label: 'Work Orders', href: '/work-orders', roles: ['admin', 'supervisor'] },
+    { label: 'My Tasks', href: '/my-tasks', roles: ['technician'] },
+    { label: 'My Assets', href: '/my-assets', roles: ['client'] },
   ];
 
   const userCanSee = (link: typeof navLinks[0]) => {

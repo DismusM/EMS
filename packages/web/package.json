@@ -14,7 +14,9 @@
     "@ems/ui": "workspace:*",
     "@ems/shared": "workspace:*",
     "@mantine/core": "^7.10.2",
+    "@mantine/dates": "^7.10.2",
     "@mantine/hooks": "^7.10.2",
+    "dayjs": "^1.11.11",
     "next": "14.2.4",
     "react": "^18",
     "react-dom": "^18"

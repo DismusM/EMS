@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { Card, Input, Button } from '@ems/ui';
-import { Stack, Title, Alert } from '@mantine/core';
+import { Stack, Title, Alert, MantineProvider } from '@mantine/core';
 import { login } from '../api/apiClient';
 
+import { User } from '@ems/shared';
+
 interface LoginFormProps {
-  onLoginSuccess: (token: string) => void;
+  onLoginSuccess: (token:string, user: User) => void;
 }
 
 export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
@@ -21,8 +23,8 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
     setLoading(true);
 
     try {
-      const { token } = await login(email, password);
-      onLoginSuccess(token);
+      const { accessToken, user } = await login(email, password);
+      onLoginSuccess(accessToken, user);
     } catch (err: any) {
       setError(err.message || 'An unknown error occurred.');
     } finally {
@@ -31,32 +33,34 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
   };
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit}>
-        <Stack>
-          <Title order={2}>Login</Title>
-          {error && <Alert color="red" title="Login Failed">{error}</Alert>}
-          <Input
-            label="Email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.currentTarget.value)}
-            required
-            disabled={loading}
-          />
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.currentTarget.value)}
-            required
-            disabled={loading}
-          />
-          <Button type="submit" loading={loading}>
-            Login
-          </Button>
-        </Stack>
-      </form>
-    </Card>
+    <MantineProvider>
+      <Card>
+        <form onSubmit={handleSubmit}>
+          <Stack>
+            <Title order={2}>Login</Title>
+            {error && <Alert color="red" title="Login Failed">{error}</Alert>}
+            <Input
+              label="Email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.currentTarget.value)}
+              required
+              disabled={loading}
+            />
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.currentTarget.value)}
+              required
+              disabled={loading}
+            />
+            <Button type="submit" loading={loading}>
+              Login
+            </Button>
+          </Stack>
+        </form>
+      </Card>
+    </MantineProvider>
   );
 };

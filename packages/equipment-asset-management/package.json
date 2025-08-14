@@ -10,14 +10,17 @@
     "dev": "tsc -p . --watch"
   },
   "peerDependencies": {
-    "react": "^18",
-    "react-dom": "^18",
     "@mantine/core": "^7.10.2",
-    "@mantine/dates": "^7.10.2"
+    "@mantine/dates": "^7.10.2",
+    "react": "^18",
+    "react-dom": "^18"
   },
   "dependencies": {
+    "@ems/shared": "workspace:*",
     "@ems/ui": "workspace:*",
-    "@ems/shared": "workspace:*"
+    "@zxing/browser": "^0.1.5",
+    "qrcode": "^1.5.4",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/react": "^18",

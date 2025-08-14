@@ -14,7 +14,10 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
   }
 
   const token = authHeader.split(' ')[1];
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET || 'dev-secret';
+  if (!process.env.JWT_SECRET) {
+    console.warn('JWT_SECRET is not defined. Using development default.');
+  }
 
   if (!secret) {
     console.error('JWT_SECRET is not defined.');
@@ -31,7 +34,10 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
 }
 
 export function adminOnly(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    if (!req.user || req.user.role !== 'admin') {
+    // Accept either role as string 'admin' or role object with id 'admin'
+    const role = req.user?.role;
+    const isAdmin = role === 'admin' || (role && typeof role === 'object' && role.id === 'admin');
+    if (!isAdmin) {
         return res.status(403).json({ message: 'Forbidden: Admins only.' });
     }
     next();

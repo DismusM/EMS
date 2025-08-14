@@ -6,12 +6,13 @@ import * as schema from './schema';
 
 dotenv.config({ path: '.env' });
 
+const dbPath = process.env.DATABASE_URL || './dev.db';
 if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is not set for Equipment Management Service');
+  console.warn('DATABASE_URL is not set for Equipment Management Service. Using default ./dev.db');
 }
 
 // In a real monorepo, both services might connect to the same database
 // or different ones. For this project, we'll assume they might be separate
 // and each will have its own database file.
-const sqlite = new Database(process.env.DATABASE_URL);
+const sqlite = new Database(dbPath);
 export const db = drizzle(sqlite, { schema });

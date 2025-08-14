@@ -2,18 +2,17 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '.env' });
 
+const url = process.env.DATABASE_URL || './dev.db';
 if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is not set');
+  console.warn('DATABASE_URL is not set. Using default ./dev.db for user service migrations.');
 }
 
 export default {
   schema: './src/db/schema.ts',
   out: './drizzle',
   dialect: 'sqlite',
-  driver: 'turso', // Turso is compatible with libSQL, which is what D1 uses. better-sqlite3 for local.
   dbCredentials: {
-    url: process.env.DATABASE_URL,
-    authToken: process.env.DATABASE_AUTH_TOKEN,
+    url,
   },
   verbose: true,
   strict: true,
