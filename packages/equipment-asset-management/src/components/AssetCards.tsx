@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Asset, RoleId } from '@ems/shared';
+import { Asset } from '@ems/shared';
 import { Card, Text, Group, Badge, Button, SimpleGrid, Alert, Title } from '@mantine/core';
 import { PageLayout } from '@ems/ui';
 

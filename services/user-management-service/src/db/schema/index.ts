@@ -1,13 +1,27 @@
-import * as users from './users';
-import * as roles from './roles';
-import * as refreshTokens from './refreshTokens';
-import * as assets from '../../../equipment-management-service/src/db/schema';
+// Import schema definitions
+import { users } from './users';
+import { usersRelations } from './users';
+import { roles } from './roles';
+import { rolesRelations } from './roles';
+import { refreshTokens } from './refreshTokens';
+import { refreshTokensRelations } from './refreshTokens';
 
-// Beginner note: This file brings all our database table definitions together.
-// It makes it easy for other parts of our app to use them.
+// Re-export all schema components
+export {
+  users,
+  usersRelations,
+  roles,
+  rolesRelations,
+  refreshTokens,
+  refreshTokensRelations,
+};
+
+// Export the complete schema object for Drizzle ORM
 export const schema = {
-    ...users,
-    ...roles,
-    ...refreshTokens,
-    ...assets,
+  users,
+  roles,
+  refreshTokens,
+  usersRelations,
+  rolesRelations,
+  refreshTokensRelations,
 };

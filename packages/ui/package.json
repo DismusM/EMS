@@ -1,30 +1,27 @@
 {
   "name": "@ems/ui",
   "version": "1.0.0",
-  "private": true,
+  "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
-    }
-  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "dev": "tsc -p . --watch",
     "build": "tsc -p .",
-    "lint": "eslint . --ext .ts,.tsx",
-    "dev": "tsc -p . --watch"
-  },
-  "peerDependencies": {
-    "react": "^18",
-    "react-dom": "^18",
-    "@mantine/core": "^7.10.2"
+    "lint": "eslint . --ext .ts,.tsx"
   },
   "devDependencies": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "typescript": "^5"
-  }
+  },
+  "peerDependencies": {
+    "@mantine/core": "^8.2.4",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "module": "dist/index.esm.js"
 }

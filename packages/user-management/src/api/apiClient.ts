@@ -1,4 +1,4 @@
-import { User } from '@ems/shared';
+import { User, UserProfile } from '@ems/shared';
 
 // Read from env; default to localhost for dev
 const API_BASE_URL = process.env.NEXT_PUBLIC_USER_API_URL || 'http://localhost:3001/api';
@@ -119,13 +119,20 @@ export async function createUser(userData: any, token: string): Promise<User> {
     return response.json();
 }
 
-export async function register(name: string, email: string, password: string): Promise<User> {
+export async function register(
+  name: string, 
+  email: string, 
+  password: string, 
+  phone?: string, 
+  department?: string, 
+  position?: string
+): Promise<User> {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, phone, department, position }),
   });
 
   if (!response.ok) {
@@ -141,7 +148,7 @@ export async function getUsers(
   status?: 'pending' | 'approved' | 'rejected',
   role?: string,
   q?: string
-): Promise<User[]> {
+): Promise<UserProfile[]> {
   const url = new URL(`${API_BASE_URL}/users`);
   if (status) url.searchParams.append('status', status);
   if (role) url.searchParams.append('role', role);

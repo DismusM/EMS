@@ -2,14 +2,14 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import authRoutes from './api/authRoutes';
-import userRoutes from './api/userRoutes';
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.argv.find(arg => arg.startsWith('--port='))?.split('=')[1] || process.env.PORT || 3001;
 
 // CORS: allow frontend to send/receive cookies
 const WEB_ORIGIN = process.env.WEB_ORIGIN || 'http://localhost:3000';

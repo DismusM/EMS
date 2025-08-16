@@ -1,0 +1,44 @@
+{
+  "name": "@ems/web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ems/equipment-asset-management": "workspace:*",
+    "@ems/shared": "workspace:*",
+    "@ems/ui": "workspace:*",
+    "@ems/user-management": "workspace:*",
+    "@mantine/core": "^8.2.4",
+    "@mantine/dates": "^8.2.4",
+    "@mantine/hooks": "^8.2.4",
+    "@mantine/notifications": "^8.2.4",
+    "@tabler/icons-react": "^3.34.1",
+    "@types/qrcode": "^1.5.5",
+    "axios": "^1.11.0",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.11",
+    "next": "14.2.4",
+    "qrcode": "^1.5.4",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.10",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.4",
+    "typescript": "^5.9.2"
+  },
+  "module": "dist/index.esm.js"
+}

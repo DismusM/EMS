@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Asset, RoleId } from '@ems/shared';
+import { Asset, Role, ROLES } from '@ems/shared';
 import { getAssets, deleteAsset, patchAssetStatus } from '../api/apiClient';
 import { Table, Button, Group, Alert, Title, TextInput, Select, Badge, Stack, SegmentedControl } from '@mantine/core';
 import { PageLayout } from '@ems/ui';
@@ -13,7 +13,7 @@ import { QrScannerModal } from './QrScannerModal';
 interface AssetListProps {
   token: string;
   // In a real app, role would be derived from the token/auth context
-  userRole: RoleId;
+  userRole: Role;
   onEditAsset: (asset: Asset) => void;
   onCreateAsset: () => void;
 }
@@ -64,7 +64,7 @@ export const AssetList = ({ token, userRole, onEditAsset, onCreateAsset }: Asset
     }
   };
 
-  const canManage = userRole === 'admin' || userRole === 'asset_manager';
+  const canManage = userRole === ROLES.ADMIN || userRole === ROLES.ASSET_MANAGER;
 
   const statusBadge = (status: Asset['status']) => {
     if (status === 'OPERATIONAL') return <Badge color="green">Active</Badge>;
@@ -156,7 +156,7 @@ export const AssetList = ({ token, userRole, onEditAsset, onCreateAsset }: Asset
           canManage={canManage}
           onEdit={onEditAsset}
           onRetire={(a) => handleDelete(a.id)}
-          onChangeStatus={async (a, s) => { await patchAssetStatus(a.id, s, token); fetchAssets(); }}
+                    onChangeStatus={async (a, s) => { await patchAssetStatus(a.id, s as any, token); fetchAssets(); }}
           onViewActivity={(a) => { setSelected(a); setActivityOpen(true); }}
           onShowQr={(a) => { setSelected(a); setQrOpen(true); }}
         />

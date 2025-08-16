@@ -1,26 +1,33 @@
 {
   "name": "@ems/user-management-service",
   "version": "1.0.0",
-  "private": true,
+  "description": "",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon --exec 'ts-node src/index.ts --port=3001'",
     "build": "tsc -p .",
     "start": "node dist/index.js",
+    "db:debug": "node -r ts-node/register src/db/debug_show_users.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node -r ts-node/register src/db/migrate.ts",
-    "db:seed": "node -r ts-node/register src/db/seed.ts",
-    "db:debug": "node -r ts-node/register src/db/debug_show_users.ts"
+    "db:seed": "node -r ts-node/register src/db/seed.ts"
   },
   "dependencies": {
+    "@types/pg": "^8.15.5",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^12.2.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.31.2",
+    "drizzle-orm": "^0.44.4",
+    "drizzle-zod": "^0.8.3",
     "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -34,5 +41,6 @@
     "nodemon": "^3.1.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
-  }
+  },
+  "module": "dist/index.esm.js"
 }

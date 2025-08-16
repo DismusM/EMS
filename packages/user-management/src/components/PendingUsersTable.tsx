@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User } from '@ems/shared';
+import { UserProfile } from '@ems/shared';
 import { Table, Button, Group, Alert, Title, Text } from '@mantine/core';
 import { getUsers, updateUserStatus } from '../api/apiClient';
 
@@ -11,7 +11,7 @@ interface PendingUsersTableProps {
 }
 
 export const PendingUsersTable = ({ token, refreshKey }: PendingUsersTableProps) => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPendingUsers = async () => {

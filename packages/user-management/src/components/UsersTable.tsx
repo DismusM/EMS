@@ -115,7 +115,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ token, currentUserId, re
       <Table.Tr key={u.id}>
         <Table.Td>{u.name}</Table.Td>
         <Table.Td>{u.email}</Table.Td>
-        <Table.Td><Badge variant="light">{u.role?.id || "-"}</Badge></Table.Td>
+        <Table.Td><Badge variant="light">{u.role || "-"}</Badge></Table.Td>
         <Table.Td>
           {uAny.status === "approved" && <Badge color="green">active</Badge>}
           {uAny.status === "pending" && <Badge color="yellow">pending</Badge>}

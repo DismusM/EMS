@@ -34,3 +34,6 @@ coverage
 
 # Turbo
 .turbo
+
+.DS_Store
+*.tsbuildinfo

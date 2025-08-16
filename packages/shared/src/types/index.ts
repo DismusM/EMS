@@ -34,9 +34,16 @@ export interface Asset {
   updatedAt: string;
 }
 
-// This could be expanded with more auth-related types
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
+}
+
+export interface SharedTypes {
+  Role: Role;
+  RoleId: RoleId;
+  User: User;
+  Asset: Asset;
+  AuthState: AuthState;
 }

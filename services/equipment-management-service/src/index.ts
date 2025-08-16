@@ -1,13 +1,13 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import assetRoutes from './api/assetRoutes';
+import assetRoutes from './routes/assetRoutes';
 
 // Load environment variables from .env file
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.argv.find(arg => arg.startsWith('--port='))?.split('=')[1] || process.env.PORT || 3003;
 
 // CORS: allow frontend to send/receive cookies if needed
 const WEB_ORIGIN = process.env.WEB_ORIGIN || 'http://localhost:3000';

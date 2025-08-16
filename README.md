@@ -1,62 +1,142 @@
-# 🛠️ EMS – Equipment Maintenance System (Monorepo)
+# Equipment Maintenance System (EMS)
 
-A fullstack, modular Equipment Maintenance System built using a Turborepo monorepo structure. Designed for managing equipment maintenance workflows, user roles, and service tasks with flexibility, scalability, and reusability in mind.
+A modern, full-stack equipment maintenance and asset management system built with Next.js, TypeScript, and a microservices architecture.
 
----
+## 🏗️ Architecture
 
-## 📦 Folder Structure
+This is a monorepo containing:
+
+- **Frontend**: Next.js 14 with TypeScript and Mantine UI
+- **Backend Services**: Express.js microservices
+- **Database**: SQLite with Drizzle ORM
+- **Package Management**: pnpm with workspaces
+
+## 📁 Project Structure
 
 ```
 EMS/
+├── apps/
+│   └── web/                 # Next.js frontend application
 ├── packages/
-│   ├── web/                          ← Main frontend app (dashboard + layout)
-│   ├── user-management/              ← Frontend: login, profile, auth UI
-│   ├── equipment-asset-management/   ← Frontend: asset registration + views
-│   ├── ui/ (optional)                ← Shared UI components
-│   └── shared/ (optional)            ← Types, constants, utils
-
+│   ├── shared/             # Shared types and utilities
+│   ├── ui/                 # Shared UI components
+│   ├── user-management/    # User management package
+│   └── equipment-asset-management/  # Asset management package
 ├── services/
-│   ├── user-management-service/      ← Backend: login, JWT, roles, auth API
-│   └── equipment-management-service/ ← Backend: CRUD APIs for assets
-
-├── turbo.json                        ← Turborepo pipeline config
-├── package.json                      ← Root dependencies
-├── pnpm-workspace.yaml               ← Defines monorepo package paths
-└── README.md                         ← This file
+│   ├── user-management-service/     # User & auth microservice
+│   └── equipment-management-service/ # Equipment microservice
+└── docs/                   # Documentation
 ```
 
----
+## 🚀 Quick Start
 
-## ✅ Project Summary
+### Prerequisites
 
-The EMS helps organizations:
+- Node.js 18+ 
+- pnpm 8+
 
-- Manage equipment assets (generators, pumps, AC units, etc.)
-- Schedule and track preventive and corrective maintenance
-- Handle work orders and dynamic checklists
-- Record service history, parts usage, and performance metrics
-- Provide role-based user access (Admin, Supervisor, Technician, Asset Manager, Client)
-- Support future AI-powered predictive maintenance
+### Installation
 
----
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd EMS
+   ```
 
-## 🧱 Folder Architecture Details
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-### `packages/` – Frontend Feature Modules (Next.js + Mantine)
-- `web/`: Main dashboard UI (sidebar, layout, auth)
-- `user-management/`: Login, signup, profile UI
-- `equipment-asset-management/`: Asset forms, views
-- `ui/`: (Optional) Reusable UI components
-- `shared/`: (Optional) Shared types, utils
+3. **Set up the database**
+   ```bash
+   # Seed the user management database
+   cd services/user-management-service
+   pnpm run db:seed
+   cd ../..
+   ```
 
-### `services/` – Backend Feature Services (Express + TypeScript)
-- `user-management-service/`: Auth APIs, JWT, user data
-- `equipment-management-service/`: Asset APIs, DB logic
+4. **Start the development servers**
+   ```bash
+   # Terminal 1: Start user management service
+   cd services/user-management-service
+   pnpm run dev
 
-**Each service includes:**
-- `api/`: Routes like `/auth/login`, `/assets`
-- `models/`: Database models (e.g., `User.ts`)
-- `services/`: Core business logic (e.g., `authService.ts`)
+   # Terminal 2: Start web application
+   cd apps/web
+   pnpm run dev
+   ```
+
+5. **Access the application**
+   - Web App: http://localhost:3000
+   - User API: http://localhost:3001
+
+## 🔐 Authentication & User Management
+
+The system uses JWT-based authentication with role-based access control (RBAC) and admin approval workflow for new users.
+
+### Default Users
+
+After seeding, you can log in with:
+
+- **Admin**: admin@ems-demo.com / password123
+- **Asset Manager**: sarah.wilson@ems-demo.com / password123
+- **Supervisor**: mike.johnson@ems-demo.com / password123
+- **Technician**: john.smith@ems-demo.com / password123
+- **Client**: robert.brown@ems-demo.com / password123
+
+### User Roles & Permissions
+
+- **Administrator**: Full system access, user management, approve/reject registrations
+- **Asset Manager**: Asset management, reporting, view all assets
+- **Supervisor**: Team oversight, maintenance scheduling, view team assets
+- **Technician**: Equipment maintenance, work orders, update asset status
+- **Client**: View assigned assets, submit maintenance requests
+
+### Registration Process
+
+1. New users register via the signup form with contact details
+2. Account is created with "pending" status
+3. Admin receives notification and reviews the registration
+4. Admin approves/rejects the account
+5. User receives notification and can log in if approved
+
+## 🏭 Asset Management
+
+### Features
+- **Asset Catalog**: Complete listing with search and filtering
+- **Asset Details**: Comprehensive information including specifications, maintenance history
+- **QR Code Integration**: Generate and download QR codes for quick asset access
+- **Asset Status Tracking**: Real-time status updates (Active, In Repair, Inactive)
+- **Location Management**: Track asset locations across facilities
+
+### Asset Information
+- Basic details (name, model, serial number)
+- Manufacturer and purchase information
+- Warranty and maintenance schedules
+- Assigned technicians
+- Cost and category classification
+- High-resolution images
+
+## 🎨 UI/UX Design
+
+### Theme & Branding
+- **Primary Color**: #1E88E5 (EMS Blue)
+- **Design System**: Mantine UI components
+- **Typography**: Inter font family
+- **Responsive**: Mobile-first design approach
+
+### Key Pages
+- **Landing Page**: Modern hero section with feature highlights
+- **Dashboard**: Role-based overview with quick actions
+- **Asset Listing**: Grid/list view with advanced filtering
+- **Asset Details**: Comprehensive asset information with QR codes
+- **User Management**: Admin interface for user approval and role management
+
+## 🛠️ Development
+
+### Available Scripts
+
 - `middleware/`: Role checks, error handling
 
 ---

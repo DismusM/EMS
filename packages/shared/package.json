@@ -1,14 +1,20 @@
 {
   "name": "@ems/shared",
   "version": "1.0.0",
-  "private": true,
+  "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc -p .",
-    "dev": "tsc -p . --watch"
+    "dev": "tsc -p . --watch",
+    "build": "tsc -p ."
   },
   "devDependencies": {
+    "@mantine/core": "^8.2.4",
+    "@mantine/hooks": "^8.2.4",
     "typescript": "^5"
-  }
+  },
+  "module": "dist/index.esm.js"
 }

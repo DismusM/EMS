@@ -38,7 +38,7 @@ export const AssetForm = ({ opened, onClose, token, onFormSuccess, assetToEdit }
     if (assetToEdit) {
       setName(assetToEdit.name);
       setModel(assetToEdit.model || '');
-      setSerialNumber(assetToEdit.serialNumber);
+      setSerialNumber(assetToEdit.serialNumber || '');
       setLocation(assetToEdit.location || '');
       setStatus(assetToEdit.status);
       setPurchaseDate(assetToEdit.purchaseDate ? new Date(assetToEdit.purchaseDate) : null);
@@ -139,8 +139,9 @@ export const AssetForm = ({ opened, onClose, token, onFormSuccess, assetToEdit }
           <DatePickerInput
             label="Purchase Date"
             value={purchaseDate}
-            onChange={setPurchaseDate}
+            onChange={setPurchaseDate as any}
             disabled={loading}
+            clearable
           />
           <Button type="submit" loading={loading}>{isEditMode ? 'Save Changes' : 'Create Asset'}</Button>
         </Stack>
