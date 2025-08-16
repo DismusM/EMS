@@ -48,53 +48,96 @@ export default function UserManagementPage() {
     role: 'TECHNICIAN'
   });
 
-  const isAdmin = authState.user?.role === 'admin';
+  const isAdmin = String(authState.user?.role).toLowerCase() === 'admin';
+
+  // Fetch users from API
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/users', {
+        headers: {
+          'Authorization': `Bearer ${authState.token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      } else {
+        // Fallback to mock data if API fails
+        const mockUsers: User[] = [
+          {
+            id: '1',
+            name: 'John Smith',
+            email: 'john.smith@company.com',
+            role: 'TECHNICIAN',
+            status: 'approved',
+            createdAt: '2024-01-15T10:30:00Z',
+            lastLogin: '2024-01-20T14:22:00Z'
+          },
+          {
+            id: '2',
+            name: 'Sarah Johnson',
+            email: 'sarah.johnson@company.com',
+            role: 'SUPERVISOR',
+            status: 'approved',
+            createdAt: '2024-01-10T09:15:00Z',
+            lastLogin: '2024-01-19T16:45:00Z'
+          },
+          {
+            id: '3',
+            name: 'Mike Wilson',
+            email: 'mike.wilson@company.com',
+            role: 'TECHNICIAN',
+            status: 'pending',
+            createdAt: '2024-01-18T11:20:00Z'
+          },
+          {
+            id: '4',
+            name: 'Lisa Chen',
+            email: 'lisa.chen@company.com',
+            role: 'ASSET_MANAGER',
+            status: 'approved',
+            createdAt: '2024-01-12T13:45:00Z',
+            lastLogin: '2024-01-20T09:30:00Z'
+          },
+          // Include current user and admin
+          {
+            id: authState.user?.id || 'current-user',
+            name: authState.user?.name || 'Current User',
+            email: authState.user?.email || 'current@example.com',
+            role: String(authState.user?.role).toUpperCase() || 'ADMIN',
+            status: 'approved',
+            createdAt: '2024-01-01T00:00:00Z',
+            lastLogin: new Date().toISOString()
+          }
+        ];
+        setUsers(mockUsers);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      // Fallback with current user included
+      const fallbackUsers: User[] = [
+        {
+          id: authState.user?.id || 'current-user',
+          name: authState.user?.name || 'Current User',
+          email: authState.user?.email || 'current@example.com',
+          role: String(authState.user?.role).toUpperCase() || 'ADMIN',
+          status: 'approved',
+          createdAt: '2024-01-01T00:00:00Z',
+          lastLogin: new Date().toISOString()
+        }
+      ];
+      setUsers(fallbackUsers);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Mock users data - in real app, fetch from API
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        name: 'John Smith',
-        email: 'john.smith@company.com',
-        role: 'TECHNICIAN',
-        status: 'approved',
-        createdAt: '2024-01-15T10:30:00Z',
-        lastLogin: '2024-01-20T14:22:00Z'
-      },
-      {
-        id: '2',
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@company.com',
-        role: 'SUPERVISOR',
-        status: 'approved',
-        createdAt: '2024-01-10T09:15:00Z',
-        lastLogin: '2024-01-19T16:45:00Z'
-      },
-      {
-        id: '3',
-        name: 'Mike Wilson',
-        email: 'mike.wilson@company.com',
-        role: 'TECHNICIAN',
-        status: 'pending',
-        createdAt: '2024-01-18T11:20:00Z'
-      },
-      {
-        id: '4',
-        name: 'Lisa Chen',
-        email: 'lisa.chen@company.com',
-        role: 'ASSET_MANAGER',
-        status: 'approved',
-        createdAt: '2024-01-12T13:45:00Z',
-        lastLogin: '2024-01-20T09:30:00Z'
-      }
-    ];
-    
-    setTimeout(() => {
-      setUsers(mockUsers);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    if (authState.token) {
+      fetchUsers();
+    }
+  }, [authState.token]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -116,24 +159,78 @@ export default function UserManagementPage() {
     }
   };
 
-  const handleApproveUser = (userId: string) => {
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, status: 'approved' as const } : user
-    ));
-  };
+  const handleApproveUser = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/users/${userId}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${authState.token}`,
+        },
+      });
 
-  const handleSuspendUser = (userId: string) => {
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, status: 'suspended' as const } : user
-    ));
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    if (userId === authState.user?.id) {
-      alert('You cannot delete your own account');
-      return;
+      if (response.ok) {
+        setUsers(users.map(user => 
+          user.id === userId ? { ...user, status: 'approved' as const } : user
+        ));
+      }
+    } catch (error) {
+      console.error('Error approving user:', error);
     }
-    setUsers(users.filter(user => user.id !== userId));
+  };
+
+  const handleSuspendUser = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/users/${userId}/suspend`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${authState.token}`,
+        },
+      });
+
+      if (response.ok) {
+        setUsers(users.map(user => 
+          user.id === userId ? { ...user, status: 'suspended' as const } : user
+        ));
+      }
+    } catch (error) {
+      console.error('Error suspending user:', error);
+    }
+  };
+
+  const handleReactivateUser = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/users/${userId}/reactivate`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${authState.token}`,
+        },
+      });
+
+      if (response.ok) {
+        setUsers(users.map(user => 
+          user.id === userId ? { ...user, status: 'approved' as const } : user
+        ));
+      }
+    } catch (error) {
+      console.error('Error reactivating user:', error);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authState.token}`,
+        },
+      });
+
+      if (response.ok) {
+        setUsers(users.filter(user => user.id !== userId));
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
   };
 
   const handleEditUser = (user: User) => {
@@ -145,29 +242,72 @@ export default function UserManagementPage() {
     setEditDrawerOpened(true);
   };
 
-  const handleSaveUser = () => {
-    if (selectedUser) {
-      setUsers(users.map(user => 
-        user.id === selectedUser.id ? selectedUser : user
-      ));
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      const response = await fetch(`/api/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify({
+          name: selectedUser.name,
+          email: selectedUser.email,
+          role_id: selectedUser.role.toLowerCase(),
+          status: selectedUser.status
+        }),
+      });
+
+      if (response.ok) {
+        setUsers(users.map(user => 
+          user.id === selectedUser.id ? selectedUser : user
+        ));
+      }
       setEditDrawerOpened(false);
       setSelectedUser(null);
+    } catch (error) {
+      console.error('Error updating user:', error);
     }
   };
 
-  const handleAddUser = () => {
-    const newId = (users.length + 1).toString();
-    const userToAdd: User = {
-      id: newId,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-    setUsers([...users, userToAdd]);
-    setAddModalOpened(false);
-    setNewUser({ name: '', email: '', role: 'TECHNICIAN' });
+  const handleAddUser = async () => {
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify({
+          name: newUser.name,
+          email: newUser.email,
+          role_id: newUser.role.toLowerCase()
+        }),
+      });
+
+      if (response.ok) {
+        const createdUser = await response.json();
+        setUsers([...users, createdUser]);
+      } else {
+        // Fallback to local state update
+        const newId = (users.length + 1).toString();
+        const userToAdd: User = {
+          id: newId,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        };
+        setUsers([...users, userToAdd]);
+      }
+      setAddModalOpened(false);
+      setNewUser({ name: '', email: '', role: 'TECHNICIAN' });
+    } catch (error) {
+      console.error('Error adding user:', error);
+    }
   };
 
   if (!isAdmin) {

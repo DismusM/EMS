@@ -26,7 +26,7 @@ import {
   Loader,
   Center
 } from '@mantine/core';
-import { IconSearch, IconEye, IconQrcode, IconGridDots, IconList, IconDownload } from '@tabler/icons-react';
+import { IconSearch, IconEye, IconQrcode, IconGridDots, IconList, IconDownload, IconEdit } from '@tabler/icons-react';
 import Link from 'next/link';
 import QRCode from 'qrcode';
 
@@ -48,8 +48,10 @@ export default function AssetsPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
   const [addModalOpened, setAddModalOpened] = useState(false);
+  const [editModalOpened, setEditModalOpened] = useState(false);
   const [qrModalOpened, setQrModalOpened] = useState(false);
   const [selectedAssetForQR, setSelectedAssetForQR] = useState<Asset | null>(null);
+  const [selectedAssetForEdit, setSelectedAssetForEdit] = useState<Asset | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [newAsset, setNewAsset] = useState({
     name: '',
@@ -58,69 +60,73 @@ export default function AssetsPage() {
     location: '',
     status: 'active' as Asset['status']
   });
+  const [editAsset, setEditAsset] = useState({
+    name: '',
+    model: '',
+    serial: '',
+    location: '',
+    status: 'active' as Asset['status']
+  });
+
+  // Fetch assets from API
+  const fetchAssets = async () => {
+    try {
+      const response = await fetch('/api/assets', {
+        headers: {
+          'Authorization': `Bearer ${authState.token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAssets(data);
+      } else {
+        // Fallback to mock data if API fails
+        const mockAssets: Asset[] = [
+          {
+            id: '1',
+            name: 'Industrial Generator G-100',
+            model: 'PowerMax 5000',
+            serial: 'PM5K-001',
+            status: 'active',
+            location: 'Main Power Room',
+            imageUrl: 'https://via.placeholder.com/300x200.png?text=Generator',
+          },
+          {
+            id: '2',
+            name: 'HVAC Unit A-20',
+            model: 'CoolBreeze 20X',
+            serial: 'CB20X-045',
+            status: 'in-repair',
+            location: 'Rooftop Section A',
+            imageUrl: 'https://via.placeholder.com/300x200.png?text=HVAC',
+          },
+          {
+            id: '3',
+            name: 'Water Pump P-05',
+            model: 'AquaFlow 300',
+            serial: 'AF300-112',
+            status: 'active',
+            location: 'Basement Level 2',
+            imageUrl: 'https://via.placeholder.com/300x200.png?text=Water+Pump',
+          },
+        ];
+        setAssets(mockAssets);
+      }
+    } catch (error) {
+      console.error('Failed to fetch assets:', error);
+      // Fallback to empty array or mock data
+      setAssets([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Mock assets data - in real app, fetch from API
-    const mockAssets: Asset[] = [
-      {
-        id: '1',
-        name: 'Industrial Generator G-100',
-        model: 'PowerMax 5000',
-        serial: 'PM5K-001',
-        status: 'active',
-        location: 'Main Power Room',
-        imageUrl: 'https://via.placeholder.com/300x200.png?text=Generator',
-      },
-      {
-        id: '2',
-        name: 'HVAC Unit A-20',
-        model: 'CoolBreeze 20X',
-        serial: 'CB20X-045',
-        status: 'in-repair',
-        location: 'Rooftop Section A',
-        imageUrl: 'https://via.placeholder.com/300x200.png?text=HVAC',
-      },
-      {
-        id: '3',
-        name: 'Water Pump P-05',
-        model: 'AquaFlow 300',
-        serial: 'AF300-112',
-        status: 'active',
-        location: 'Basement Level 2',
-        imageUrl: 'https://via.placeholder.com/300x200.png?text=Water+Pump',
-      },
-      {
-        id: '4',
-        name: 'Conveyor Belt System CB-003',
-        model: 'FlowMax 2000',
-        serial: 'FM2K-078',
-        status: 'active',
-        location: 'Production Floor A',
-        imageUrl: 'https://via.placeholder.com/300x200.png?text=Conveyor',
-      },
-      {
-        id: '5',
-        name: 'Forklift FL-002',
-        model: 'LiftPro 3500',
-        serial: 'LP35-234',
-        status: 'in-repair',
-        location: 'Warehouse Section B',
-        imageUrl: 'https://via.placeholder.com/300x200.png?text=Forklift',
-      },
-      {
-        id: '6',
-        name: 'Air Compressor AC-015',
-        model: 'CompressMax 500',
-        serial: 'CM500-089',
-        status: 'active',
-        location: 'Utility Room C',
-        imageUrl: 'https://via.placeholder.com/300x200.png?text=Compressor',
-      },
-    ];
-
-    setAssets(mockAssets);
-    setLoading(false);
-  }, []);
+    if (authState.token) {
+      fetchAssets();
+    }
+  }, [authState.token]);
 
   if (!authState.token) return null;
 
@@ -139,6 +145,98 @@ export default function AssetsPage() {
     active: 'green',
     'in-repair': 'yellow',
     inactive: 'gray'
+  };
+
+  const handleEditAsset = (asset: Asset) => {
+    setSelectedAssetForEdit(asset);
+    setEditAsset({
+      name: asset.name,
+      model: asset.model,
+      serial: asset.serial,
+      location: asset.location,
+      status: asset.status
+    });
+    setEditModalOpened(true);
+  };
+
+  const handleUpdateAsset = async () => {
+    if (!selectedAssetForEdit) return;
+    
+    try {
+      const response = await fetch(`/api/assets/${selectedAssetForEdit.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify({
+          name: editAsset.name,
+          model: editAsset.model,
+          serial_number: editAsset.serial,
+          location: editAsset.location,
+          status: editAsset.status.toUpperCase()
+        }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        setAssets(assets.map(asset => 
+          asset.id === selectedAssetForEdit.id 
+            ? { ...asset, ...editAsset }
+            : asset
+        ));
+        setEditModalOpened(false);
+        setSelectedAssetForEdit(null);
+      } else {
+        console.error('Failed to update asset');
+      }
+    } catch (error) {
+      console.error('Error updating asset:', error);
+    }
+  };
+
+  const handleAddAsset = async () => {
+    try {
+      const response = await fetch('/api/assets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify({
+          name: newAsset.name,
+          model: newAsset.model,
+          serial_number: newAsset.serial,
+          location: newAsset.location,
+          status: newAsset.status.toUpperCase()
+        }),
+      });
+
+      if (response.ok) {
+        const createdAsset = await response.json();
+        setAssets([...assets, createdAsset]);
+        setAddModalOpened(false);
+        setNewAsset({ name: '', model: '', serial: '', location: '', status: 'active' });
+      } else {
+        console.error('Failed to add asset');
+        // Fallback to local state update
+        const newId = (assets.length + 1).toString();
+        const assetToAdd: Asset = {
+          id: newId,
+          name: newAsset.name,
+          model: newAsset.model,
+          serial: newAsset.serial,
+          status: newAsset.status,
+          location: newAsset.location,
+          imageUrl: '/api/placeholder/300/200'
+        };
+        setAssets([...assets, assetToAdd]);
+        setAddModalOpened(false);
+        setNewAsset({ name: '', model: '', serial: '', location: '', status: 'active' });
+      }
+    } catch (error) {
+      console.error('Error adding asset:', error);
+    }
   };
 
   const generateQRCode = async (asset: Asset) => {
@@ -279,6 +377,16 @@ export default function AssetsPage() {
                           View Details
                         </Button>
                         <Button
+                          variant="light"
+                          color="orange"
+                          size="sm"
+                          leftSection={<IconEdit size="1rem" />}
+                          style={{ flex: 1 }}
+                          onClick={() => handleEditAsset(asset)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
                           variant="outline"
                           color="#1e88e5"
                           size="sm"
@@ -321,6 +429,14 @@ export default function AssetsPage() {
                         size="sm"
                       >
                         <IconEye size="1rem" />
+                      </ActionIcon>
+                      <ActionIcon
+                        variant="outline"
+                        color="orange"
+                        size="sm"
+                        onClick={() => handleEditAsset(asset)}
+                      >
+                        <IconEdit size="1rem" />
                       </ActionIcon>
                       <ActionIcon
                         variant="outline"
@@ -406,25 +522,81 @@ export default function AssetsPage() {
                 </Button>
                 <Button
                   color="#1e88e5"
-                  onClick={() => {
-                    // TODO: Implement API call to create asset
-                    const newId = (assets.length + 1).toString();
-                    const assetToAdd: Asset = {
-                      id: newId,
-                      name: newAsset.name,
-                      model: newAsset.model,
-                      serial: newAsset.serial,
-                      status: newAsset.status,
-                      location: newAsset.location,
-                      imageUrl: '/api/placeholder/300/200'
-                    };
-                    setAssets([...assets, assetToAdd]);
-                    setAddModalOpened(false);
-                    setNewAsset({ name: '', model: '', serial: '', location: '', status: 'active' });
-                  }}
+                  onClick={handleAddAsset}
                   disabled={!newAsset.name || !newAsset.location}
                 >
                   Add Asset
+                </Button>
+              </Group>
+            </Stack>
+          </Modal>
+
+          {/* Edit Asset Modal */}
+          <Modal
+            opened={editModalOpened}
+            onClose={() => {
+              setEditModalOpened(false);
+              setSelectedAssetForEdit(null);
+            }}
+            title="Edit Asset"
+            size="md"
+          >
+            <Stack gap="md">
+              <TextInput
+                label="Asset Name"
+                placeholder="Enter asset name"
+                value={editAsset.name}
+                onChange={(e) => setEditAsset({ ...editAsset, name: e.target.value })}
+                required
+              />
+              <TextInput
+                label="Model"
+                placeholder="Enter model"
+                value={editAsset.model}
+                onChange={(e) => setEditAsset({ ...editAsset, model: e.target.value })}
+              />
+              <TextInput
+                label="Serial Number"
+                placeholder="Enter serial number"
+                value={editAsset.serial}
+                onChange={(e) => setEditAsset({ ...editAsset, serial: e.target.value })}
+                required
+              />
+              <TextInput
+                label="Location"
+                placeholder="Enter location"
+                value={editAsset.location}
+                onChange={(e) => setEditAsset({ ...editAsset, location: e.target.value })}
+                required
+              />
+              <Select
+                label="Status"
+                placeholder="Select status"
+                value={editAsset.status}
+                onChange={(value) => setEditAsset({ ...editAsset, status: value as Asset['status'] })}
+                data={[
+                  { value: 'active', label: 'Active' },
+                  { value: 'in-repair', label: 'In Repair' },
+                  { value: 'inactive', label: 'Inactive' },
+                ]}
+                required
+              />
+              <Group justify="flex-end" mt="md">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditModalOpened(false);
+                    setSelectedAssetForEdit(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  color="#1e88e5"
+                  onClick={handleUpdateAsset}
+                  disabled={!editAsset.name || !editAsset.location}
+                >
+                  Update Asset
                 </Button>
               </Group>
             </Stack>
