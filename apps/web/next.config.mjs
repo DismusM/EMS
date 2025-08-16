@@ -12,11 +12,11 @@ const require = createRequire(import.meta.url);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@ems/ui', '@ems/user-management', '@ems/equipment-asset-management', '@ems/shared'],
+  transpilePackages: ['@ems/user-management', '@ems/shared', '@ems/ui'],
+  experimental: {
+    optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
+  },
   webpack: (config) => {
-    // Get the path to the src directory
-    const srcPath = path.join(__dirname, 'src');
-    
     // Configure path aliases
     config.resolve = config.resolve || {};
     config.resolve.alias = {
@@ -25,8 +25,8 @@ const nextConfig = {
       // '@mantine/core/styles.css'
       '@mantine/core$': require.resolve('@mantine/core'),
       '@mantine/hooks$': require.resolve('@mantine/hooks'),
-      // Add @/ alias to point to src directory
-      '@': srcPath,
+      // Add @/ alias to point to root directory
+      '@': __dirname,
     };
     
     return config;

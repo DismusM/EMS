@@ -3,7 +3,7 @@ import '@mantine/dates/styles.css';
 import './globals.css';
 
 import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from '../context/AuthContext';
 
 const theme = createTheme({
   primaryColor: 'blue',

@@ -1,83 +1,107 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { AuthGuard } from '@/components/AuthGuard';
-import { AppLayout } from '@/components/AppLayout';
-import { useAuth } from '@/hooks/useAuth';
+import { AuthGuard } from '../../../components/AuthGuard';
+import { AppLayout } from '../../../components/AppLayout';
+import { useAuth } from '../../../hooks/useAuth';
 import { 
+  Title, 
   Card, 
   Group, 
   Stack, 
   Text, 
-  Title, 
-  Badge,
+  Badge, 
   Button,
   Image,
-  Grid,
   Divider,
-  ActionIcon,
-  Modal
+  Grid,
+  Alert,
+  ActionIcon
 } from '@mantine/core';
-import { IconQrcode, IconEdit, IconArrowLeft } from '@tabler/icons-react';
+import { 
+  IconArrowLeft, 
+  IconEdit, 
+  IconQrcode, 
+  IconMapPin, 
+  IconCalendar,
+  IconTool,
+  IconUser,
+  IconFileText
+} from '@tabler/icons-react';
 import Link from 'next/link';
-import QRCode from 'qrcode';
+import { useParams } from 'next/navigation';
 
 interface Asset {
   id: string;
   name: string;
   model: string;
   serial: string;
-  status: 'OPERATIONAL' | 'IN_REPAIR' | 'DECOMMISSIONED';
+  status: 'active' | 'in-repair' | 'inactive';
   location: string;
+  category: string;
+  description: string;
+  purchaseDate: string;
+  lastMaintenance: string;
+  nextMaintenance: string;
+  assignedTo?: string;
   imageUrl?: string;
-  description?: string;
-  manufacturer?: string;
-  purchaseDate?: string;
-  warrantyExpiry?: string;
-  maintenanceSchedule?: string;
-  assignedTechnician?: string;
-  cost?: number;
-  category?: string;
 }
 
 export default function AssetDetailsPage() {
-  const params = useParams();
   const { authState } = useAuth();
+  const params = useParams();
+  const assetId = params.id as string;
   const [asset, setAsset] = useState<Asset | null>(null);
   const [loading, setLoading] = useState(true);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
-  const [qrModalOpened, setQrModalOpened] = useState(false);
 
   useEffect(() => {
-    // Mock asset data - in real app, fetch from API
-    const mockAsset: Asset = {
-      id: params.id as string,
-      name: 'Industrial Generator G-100',
-      model: 'PowerMax 5000',
-      serial: 'PM5K-001',
-      status: 'OPERATIONAL',
-      location: 'Main Power Room',
-      imageUrl: 'https://via.placeholder.com/400x300.png?text=Generator',
-      description: 'Primary backup power generator for facility operations',
-      manufacturer: 'PowerMax Industries',
-      purchaseDate: '2022-03-15',
-      warrantyExpiry: '2025-03-15',
-      maintenanceSchedule: 'Monthly',
-      assignedTechnician: 'John Smith',
-      cost: 25000.00,
-      category: 'Power Systems',
+    // Mock asset data - in real app, fetch from API using assetId
+    const mockAssets: Record<string, Asset> = {
+      '1': {
+        id: '1',
+        name: 'Industrial Generator G-100',
+        model: 'PowerMax 5000',
+        serial: 'PM5000-2024-001',
+        status: 'active',
+        location: 'Building A - Basement',
+        category: 'Power Equipment',
+        description: 'Primary backup generator for Building A. Provides emergency power during outages.',
+        purchaseDate: '2024-01-15',
+        lastMaintenance: '2024-02-15',
+        nextMaintenance: '2024-05-15',
+        assignedTo: 'John Smith',
+        imageUrl: '/api/placeholder/400/300'
+      },
+      '2': {
+        id: '2',
+        name: 'HVAC Unit A-20',
+        model: 'CoolAir Pro 3000',
+        serial: 'CA3000-2023-045',
+        status: 'in-repair',
+        location: 'Building A - Roof',
+        category: 'Climate Control',
+        description: 'Main HVAC unit for Building A floors 1-5. Currently undergoing maintenance.',
+        purchaseDate: '2023-06-10',
+        lastMaintenance: '2024-01-20',
+        nextMaintenance: '2024-04-20',
+        assignedTo: 'Sarah Johnson',
+        imageUrl: '/api/placeholder/400/300'
+      }
     };
 
-    setAsset(mockAsset);
+    const foundAsset = mockAssets[assetId];
+    setAsset(foundAsset || null);
     setLoading(false);
+  }, [assetId]);
 
-    // Generate QR code
-    const assetUrl = `${window.location.origin}/assets/${params.id}`;
-    QRCode.toDataURL(assetUrl)
-      .then(url => setQrCodeUrl(url))
-      .catch(err => console.error('Error generating QR code:', err));
-  }, [params.id]);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'green';
+      case 'in-repair': return 'yellow';
+      case 'inactive': return 'gray';
+      default: return 'gray';
+    }
+  };
 
   if (!authState.token) return null;
 
@@ -95,17 +119,26 @@ export default function AssetDetailsPage() {
     return (
       <AuthGuard>
         <AppLayout>
-          <Text>Asset not found</Text>
+          <Stack gap="lg">
+            <Group>
+              <ActionIcon 
+                component={Link} 
+                href="/assets" 
+                variant="subtle" 
+                size="lg"
+              >
+                <IconArrowLeft size="1.2rem" />
+              </ActionIcon>
+              <Title order={2}>Asset Not Found</Title>
+            </Group>
+            <Alert color="red" title="Asset Not Found">
+              The requested asset could not be found. It may have been deleted or the ID is incorrect.
+            </Alert>
+          </Stack>
         </AppLayout>
       </AuthGuard>
     );
   }
-
-  const statusColor = {
-    OPERATIONAL: 'green',
-    IN_REPAIR: 'yellow',
-    DECOMMISSIONED: 'gray'
-  }[asset.status];
 
   return (
     <AuthGuard>
@@ -113,25 +146,28 @@ export default function AssetDetailsPage() {
         <Stack gap="lg">
           <Group justify="space-between">
             <Group>
-              <Button 
+              <ActionIcon 
                 component={Link} 
                 href="/assets" 
                 variant="subtle" 
-                leftSection={<IconArrowLeft size="1rem" />}
+                size="lg"
               >
-                Back to Assets
-              </Button>
+                <IconArrowLeft size="1.2rem" />
+              </ActionIcon>
               <Title order={2}>{asset.name}</Title>
             </Group>
             <Group>
-              <ActionIcon 
-                variant="light" 
-                size="lg"
-                onClick={() => setQrModalOpened(true)}
+              <Button 
+                leftSection={<IconQrcode size="1rem" />}
+                variant="outline"
+                color="#1e88e5"
               >
-                <IconQrcode size="1.2rem" />
-              </ActionIcon>
-              <Button leftSection={<IconEdit size="1rem" />}>
+                Generate QR
+              </Button>
+              <Button 
+                leftSection={<IconEdit size="1rem" />}
+                color="#1e88e5"
+              >
                 Edit Asset
               </Button>
             </Group>
@@ -139,59 +175,64 @@ export default function AssetDetailsPage() {
 
           <Grid>
             <Grid.Col span={{ base: 12, md: 8 }}>
-              <Card>
+              <Card withBorder padding="lg">
                 <Stack gap="md">
-                  {asset.imageUrl && (
-                    <Image
-                      src={asset.imageUrl}
-                      alt={asset.name}
-                      height={300}
-                      radius="md"
-                    />
-                  )}
-                  
                   <Group justify="space-between">
-                    <Title order={3}>{asset.name}</Title>
-                    <Badge color={statusColor} size="lg">
-                      {asset.status.replace('_', ' ')}
+                    <Text size="xl" fw={600}>{asset.name}</Text>
+                    <Badge color={getStatusColor(asset.status)} size="lg">
+                      {asset.status.replace('-', ' ').toUpperCase()}
                     </Badge>
                   </Group>
 
-                  {asset.description && (
-                    <Text c="dimmed">{asset.description}</Text>
-                  )}
+                  <Image
+                    src={asset.imageUrl}
+                    height={300}
+                    alt={asset.name}
+                    radius="md"
+                    fallbackSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMDAgMTUwTDE3NSAxMjVIMjI1TDIwMCAxNTBaIiBmaWxsPSIjQ0NDIi8+Cjx0ZXh0IHg9IjIwMCIgeT0iMTgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE0Ij5Bc3NldCBJbWFnZTwvdGV4dD4KPC9zdmc+"
+                  />
+
+                  <Text c="dimmed">{asset.description}</Text>
 
                   <Divider />
 
                   <Grid>
                     <Grid.Col span={6}>
-                      <Text fw={500}>Model</Text>
-                      <Text>{asset.model}</Text>
+                      <Group gap="xs">
+                        <IconTool size="1rem" color="#1e88e5" />
+                        <div>
+                          <Text size="sm" c="dimmed">Model</Text>
+                          <Text fw={500}>{asset.model}</Text>
+                        </div>
+                      </Group>
                     </Grid.Col>
                     <Grid.Col span={6}>
-                      <Text fw={500}>Serial Number</Text>
-                      <Text>{asset.serial}</Text>
+                      <Group gap="xs">
+                        <IconFileText size="1rem" color="#1e88e5" />
+                        <div>
+                          <Text size="sm" c="dimmed">Serial Number</Text>
+                          <Text fw={500}>{asset.serial}</Text>
+                        </div>
+                      </Group>
                     </Grid.Col>
                     <Grid.Col span={6}>
-                      <Text fw={500}>Location</Text>
-                      <Text>{asset.location}</Text>
+                      <Group gap="xs">
+                        <IconMapPin size="1rem" color="#1e88e5" />
+                        <div>
+                          <Text size="sm" c="dimmed">Location</Text>
+                          <Text fw={500}>{asset.location}</Text>
+                        </div>
+                      </Group>
                     </Grid.Col>
                     <Grid.Col span={6}>
-                      <Text fw={500}>Category</Text>
-                      <Text>{asset.category || 'N/A'}</Text>
+                      <Group gap="xs">
+                        <IconUser size="1rem" color="#1e88e5" />
+                        <div>
+                          <Text size="sm" c="dimmed">Assigned To</Text>
+                          <Text fw={500}>{asset.assignedTo || 'Unassigned'}</Text>
+                        </div>
+                      </Group>
                     </Grid.Col>
-                    {asset.manufacturer && (
-                      <Grid.Col span={6}>
-                        <Text fw={500}>Manufacturer</Text>
-                        <Text>{asset.manufacturer}</Text>
-                      </Grid.Col>
-                    )}
-                    {asset.assignedTechnician && (
-                      <Grid.Col span={6}>
-                        <Text fw={500}>Assigned Technician</Text>
-                        <Text>{asset.assignedTechnician}</Text>
-                      </Grid.Col>
-                    )}
                   </Grid>
                 </Stack>
               </Card>
@@ -199,80 +240,56 @@ export default function AssetDetailsPage() {
 
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Stack gap="md">
-                <Card>
-                  <Title order={4} mb="md">Asset Information</Title>
-                  <Stack gap="sm">
-                    {asset.purchaseDate && (
-                      <Group justify="space-between">
-                        <Text size="sm" fw={500}>Purchase Date</Text>
-                        <Text size="sm">{asset.purchaseDate}</Text>
-                      </Group>
-                    )}
-                    {asset.warrantyExpiry && (
-                      <Group justify="space-between">
-                        <Text size="sm" fw={500}>Warranty Expires</Text>
-                        <Text size="sm">{asset.warrantyExpiry}</Text>
-                      </Group>
-                    )}
-                    {asset.maintenanceSchedule && (
-                      <Group justify="space-between">
-                        <Text size="sm" fw={500}>Maintenance</Text>
-                        <Text size="sm">{asset.maintenanceSchedule}</Text>
-                      </Group>
-                    )}
-                    {asset.cost && (
-                      <Group justify="space-between">
-                        <Text size="sm" fw={500}>Purchase Cost</Text>
-                        <Text size="sm">${asset.cost.toLocaleString()}</Text>
-                      </Group>
-                    )}
+                <Card withBorder padding="lg">
+                  <Stack gap="md">
+                    <Text size="lg" fw={600}>Maintenance Schedule</Text>
+                    
+                    <Group gap="xs">
+                      <IconCalendar size="1rem" color="#1e88e5" />
+                      <div>
+                        <Text size="sm" c="dimmed">Last Maintenance</Text>
+                        <Text fw={500}>{asset.lastMaintenance}</Text>
+                      </div>
+                    </Group>
+
+                    <Group gap="xs">
+                      <IconCalendar size="1rem" color="#1e88e5" />
+                      <div>
+                        <Text size="sm" c="dimmed">Next Maintenance</Text>
+                        <Text fw={500}>{asset.nextMaintenance}</Text>
+                      </div>
+                    </Group>
+
+                    <Button variant="light" color="#1e88e5" fullWidth>
+                      Schedule Maintenance
+                    </Button>
                   </Stack>
                 </Card>
 
-                <Card>
-                  <Title order={4} mb="md">Quick Actions</Title>
-                  <Stack gap="xs">
-                    <Button variant="light" fullWidth>
-                      Schedule Maintenance
-                    </Button>
-                    <Button variant="light" fullWidth>
-                      Update Status
-                    </Button>
-                    <Button variant="light" fullWidth>
-                      View History
-                    </Button>
+                <Card withBorder padding="lg">
+                  <Stack gap="md">
+                    <Text size="lg" fw={600}>Asset Information</Text>
+                    
+                    <div>
+                      <Text size="sm" c="dimmed">Category</Text>
+                      <Text fw={500}>{asset.category}</Text>
+                    </div>
+
+                    <div>
+                      <Text size="sm" c="dimmed">Purchase Date</Text>
+                      <Text fw={500}>{asset.purchaseDate}</Text>
+                    </div>
+
+                    <div>
+                      <Text size="sm" c="dimmed">Asset ID</Text>
+                      <Text fw={500}>{asset.id}</Text>
+                    </div>
                   </Stack>
                 </Card>
               </Stack>
             </Grid.Col>
           </Grid>
         </Stack>
-
-        <Modal
-          opened={qrModalOpened}
-          onClose={() => setQrModalOpened(false)}
-          title="Asset QR Code"
-          centered
-        >
-          <Stack align="center" gap="md">
-            {qrCodeUrl && (
-              <Image src={qrCodeUrl} alt="QR Code" width={200} height={200} />
-            )}
-            <Text size="sm" ta="center" c="dimmed">
-              Scan this QR code to quickly access this asset's details
-            </Text>
-            <Button 
-              onClick={() => {
-                const link = document.createElement('a');
-                link.download = `${asset.name}-qr-code.png`;
-                link.href = qrCodeUrl;
-                link.click();
-              }}
-            >
-              Download QR Code
-            </Button>
-          </Stack>
-        </Modal>
       </AppLayout>
     </AuthGuard>
   );
