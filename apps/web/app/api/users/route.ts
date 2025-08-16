@@ -1,78 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+import Database from 'better-sqlite3';
+import path from 'path';
 
-// Mock database - in production this would connect to your actual database
-let mockUsers = [
-  {
-    id: '1',
-    name: 'John Smith',
-    email: 'john.smith@company.com',
-    role: 'TECHNICIAN',
-    status: 'approved',
-    createdAt: '2024-01-15T10:30:00Z',
-    lastLogin: '2024-01-20T14:22:00Z'
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@company.com',
-    role: 'SUPERVISOR',
-    status: 'approved',
-    createdAt: '2024-01-10T09:15:00Z',
-    lastLogin: '2024-01-19T16:45:00Z'
-  },
-  {
-    id: '3',
-    name: 'Mike Wilson',
-    email: 'mike.wilson@company.com',
-    role: 'TECHNICIAN',
-    status: 'pending',
-    createdAt: '2024-01-18T11:20:00Z'
-  },
-  {
-    id: '4',
-    name: 'Lisa Chen',
-    email: 'lisa.chen@company.com',
-    role: 'ASSET_MANAGER',
-    status: 'approved',
-    createdAt: '2024-01-12T13:45:00Z',
-    lastLogin: '2024-01-20T09:30:00Z'
-  },
-  {
-    id: 'admin-1',
-    name: 'Default Admin',
-    email: 'admin@example.com',
-    role: 'ADMIN',
-    status: 'approved',
-    createdAt: '2024-01-01T00:00:00Z',
-    lastLogin: new Date().toISOString()
-  }
-];
+// Helper function to transform user data for frontend
+function transformUser(user: any) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+    createdAt: new Date(user.createdAt).toISOString(),
+    updatedAt: user.updatedAt ? new Date(user.updatedAt).toISOString() : null,
+    lastLogin: user.lastLogin ? new Date(user.lastLogin).toISOString() : null
+  };
+}
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    return NextResponse.json(mockUsers);
+    const DB_PATH = path.join(process.cwd(), 'data', 'ems.db');
+    const db = new Database(DB_PATH);
+    const users = db.prepare('SELECT * FROM users ORDER BY createdAt DESC').all();
+    db.close();
+    
+    const transformedUsers = users.map(transformUser);
+    
+    return NextResponse.json({ 
+      users: transformedUsers,
+      count: transformedUsers.length 
+    });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+    console.error('Error fetching users:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch users' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const DB_PATH = path.join(process.cwd(), 'data', 'ems.db');
+    const db = new Database(DB_PATH);
     const body = await request.json();
-    const { name, email, role_id } = body;
+    const { name, email, role } = body;
 
-    const newUser = {
-      id: (mockUsers.length + 1).toString(),
-      name,
-      email,
-      role: role_id.toUpperCase(),
-      status: 'pending' as const,
-      createdAt: new Date().toISOString()
-    };
+    // Validate required fields
+    if (!name || !email || !role) {
+      return NextResponse.json(
+        { error: 'Name, email, and role are required' },
+        { status: 400 }
+      );
+    }
 
-    mockUsers.push(newUser);
-    return NextResponse.json(newUser, { status: 201 });
+    // Check if user with this email already exists
+    const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'A user with this email already exists' },
+        { status: 400 }
+      );
+    }
+
+    // Insert the new user
+    const now = Date.now();
+    const userId = `user-${uuidv4()}`;
+    
+    db.prepare(
+      'INSERT INTO users (id, name, email, role, status, passwordHash, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).run(userId, name, email, role.toUpperCase(), 'pending', '', now, now);
+
+    // Log the activity
+    const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    db.prepare(
+      'INSERT INTO activity_log (id, userId, action, entityType, entityId, details, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(logId, 'admin', 'create', 'user', userId, `User ${name} created with role ${role}`, now);
+
+    // Get the created user
+    const newUser = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    db.close();
+
+    // Transform for frontend (don't include sensitive data)
+    const transformedUser = transformUser(newUser);
+
+    return NextResponse.json(transformedUser, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+    console.error('Error creating user:', error);
+    return NextResponse.json(
+      { error: 'Failed to create user' }, 
+      { status: 500 }
+    );
   }
 }

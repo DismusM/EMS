@@ -380,6 +380,15 @@ export default function AssetsPage() {
                           variant="outline"
                           color="#1e88e5"
                           size="sm"
+                          leftSection={<IconEdit size="1rem" />}
+                          onClick={() => handleEditAsset(asset)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          color="#1e88e5"
+                          size="sm"
                           leftSection={<IconQrcode size="1rem" />}
                           onClick={() => generateQRCode(asset)}
                         >
@@ -398,7 +407,7 @@ export default function AssetsPage() {
                   <Text fw={600} style={{ flex: 1 }}>Name</Text>
                   <Text fw={600} w={120}>Status</Text>
                   <Text fw={600} w={150}>Location</Text>
-                  <Text fw={600} w={100}>Actions</Text>
+                  <Text fw={600} w={120}>Actions</Text>
                 </Group>
                 {filteredAssets.map((asset) => (
                   <Group key={asset.id} p="md" style={{ borderBottom: '1px solid #f1f3f4' }}>
@@ -410,7 +419,7 @@ export default function AssetsPage() {
                       {asset.status.replace('-', ' ').toUpperCase()}
                     </Badge>
                     <Text size="sm" w={150}>{asset.location}</Text>
-                    <Group gap="xs" w={100}>
+                    <Group gap="xs" w={120}>
                       <ActionIcon
                         component={Link}
                         href={`/assets/${asset.id}`}
@@ -419,6 +428,14 @@ export default function AssetsPage() {
                         size="sm"
                       >
                         <IconEye size="1rem" />
+                      </ActionIcon>
+                      <ActionIcon
+                        variant="outline"
+                        color="#1e88e5"
+                        size="sm"
+                        onClick={() => handleEditAsset(asset)}
+                      >
+                        <IconEdit size="1rem" />
                       </ActionIcon>
                       <ActionIcon
                         variant="outline"
@@ -449,6 +466,10 @@ export default function AssetsPage() {
             title="Add New Asset"
             size="md"
             centered
+            overlayProps={{
+              backgroundOpacity: 0.55,
+              blur: 3,
+            }}
           >
             <Stack gap="md">
               <TextInput
@@ -522,6 +543,11 @@ export default function AssetsPage() {
             }}
             title="Edit Asset"
             size="md"
+            centered
+            overlayProps={{
+              backgroundOpacity: 0.55,
+              blur: 3,
+            }}
           >
             <Stack gap="md">
               <TextInput
@@ -595,6 +621,10 @@ export default function AssetsPage() {
             title={`QR Code - ${selectedAssetForQR?.name}`}
             size="md"
             centered
+            overlayProps={{
+              backgroundOpacity: 0.55,
+              blur: 3,
+            }}
           >
             <Stack gap="md" align="center">
               {qrCodeDataUrl && (

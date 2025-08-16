@@ -8,16 +8,24 @@
     "dist"
   ],
   "scripts": {
-    "dev": "turbo dev --parallel",
-    "build": "turbo build",
-    "lint": "turbo lint",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:setup": "node scripts/setup-db.js",
+    "db:init": "tsx scripts/init-db.ts",
+    "db:seed": "tsx apps/web/src/lib/db/seed.ts",
+    "prepare": "husky install",
+    "postinstall": "npm run db:setup",
     "db:generate:equipment-service": "pnpm --filter @ems/equipment-management-service run db:generate",
     "db:generate:user-service": "pnpm --filter @ems/user-management-service run db:generate"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "turbo": "^2.0.4"
+    "@types/node": "^20.19.10",
+    "husky": "^8.0.1",
+    "tsx": "^4.20.4",
+    "turbo": "^2.0.4",
+    "typescript": "^5.9.2"
   },
   "author": "Jules",
   "license": "ISC",
@@ -33,7 +41,9 @@
   "module": "dist/index.esm.js",
   "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
   "dependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/qrcode": "^1.5.5",
+    "better-sqlite3": "^12.2.0",
     "qrcode": "^1.5.4"
   }
 }

@@ -75,7 +75,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       navbar={{ width: 250, breakpoint: 'sm', collapsed: { mobile: !opened } }}
       padding="md"
     >
-      <AppShell.Header>
+      <AppShell.Header style={{ backgroundColor: '#1E88E5', borderBottom: 'none' }}>
         <Group h="100%" px="md" justify="space-between">
           <Group>
             <Text size="lg" fw={700} c="white">
@@ -120,7 +120,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar p="md">
+      <AppShell.Navbar p="md" style={{ backgroundColor: '#f8f9fa', borderRight: '1px solid #e9ecef' }}>
         <Text size="xs" tt="uppercase" fw={700} c="dimmed" mb="md">
           Navigation
         </Text>
@@ -133,6 +133,17 @@ export function AppLayout({ children }: AppLayoutProps) {
             label={item.label}
             leftSection={<item.icon size="1rem" />}
             mb="xs"
+            style={{
+              borderRadius: '8px',
+              marginBottom: '4px'
+            }}
+            styles={{
+              root: {
+                '&:hover': {
+                  backgroundColor: '#e3f2fd'
+                }
+              }
+            }}
           />
         ))}
       </AppShell.Navbar>

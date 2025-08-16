@@ -1,85 +1,134 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+import Database from 'better-sqlite3';
+import path from 'path';
 
-// Mock database - in production this would connect to your actual database
-let mockAssets = [
-  {
-    id: '1',
-    name: 'Industrial Generator G-100',
-    model: 'PowerMax 5000',
-    serial: 'PM5K-001',
-    status: 'OPERATIONAL',
-    location: 'Main Power Room',
-    imageUrl: 'https://via.placeholder.com/300x200.png?text=Generator',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    name: 'HVAC Unit A-20',
-    model: 'CoolBreeze 20X',
-    serial: 'CB20X-045',
-    status: 'IN_MAINTENANCE',
-    location: 'Rooftop Section A',
-    imageUrl: 'https://via.placeholder.com/300x200.png?text=HVAC',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '3',
-    name: 'Water Pump P-05',
-    model: 'AquaFlow 300',
-    serial: 'AF300-112',
-    status: 'OPERATIONAL',
-    location: 'Basement Level 2',
-    imageUrl: 'https://via.placeholder.com/300x200.png?text=Water+Pump',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-];
+// Helper function to transform database status to frontend format
+function transformStatus(status: string): 'active' | 'in-repair' | 'inactive' {
+  return status === 'available' ? 'active' : 
+         status === 'maintenance' ? 'in-repair' : 'inactive';
+}
 
 export async function GET(request: NextRequest) {
   try {
-    // Transform status to frontend format
-    const transformedAssets = mockAssets.map(asset => ({
-      ...asset,
-      status: asset.status === 'OPERATIONAL' ? 'active' : 
-              asset.status === 'IN_MAINTENANCE' ? 'in-repair' : 'inactive'
+    const DB_PATH = path.join(process.cwd(), 'data', 'ems.db');
+    const db = new Database(DB_PATH);
+    
+    // Get all assets from the database
+    const assets = db.prepare('SELECT * FROM assets ORDER BY createdAt DESC').all();
+    db.close();
+    
+    // Transform the data for the frontend
+    const transformedAssets = assets.map((asset: any) => ({
+      id: asset.id,
+      name: asset.name,
+      model: asset.model || '',
+      serial: asset.serialNumber,
+      location: asset.location || '',
+      status: transformStatus(asset.status),
+      purchaseDate: asset.purchaseDate ? new Date(asset.purchaseDate).toISOString() : null,
+      department: asset.department || '',
+      building: asset.building || '',
+      room: asset.room || '',
+      custodianId: asset.custodianId,
+      custodianName: asset.custodianName || '',
+      createdAt: new Date(asset.createdAt).toISOString(),
+      updatedAt: asset.updatedAt ? new Date(asset.updatedAt).toISOString() : null
     }));
     
     return NextResponse.json(transformedAssets);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch assets' }, { status: 500 });
+    console.error('Error fetching assets:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch assets' }, 
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const DB_PATH = path.join(process.cwd(), 'data', 'ems.db');
+    const db = new Database(DB_PATH);
     const body = await request.json();
-    const { name, model, serial_number, location, status } = body;
+    const { 
+      name, 
+      model, 
+      serial_number, 
+      location, 
+      status = 'in_use',
+      department,
+      building,
+      room,
+      custodianId,
+      custodianName
+    } = body;
 
-    const newAsset = {
-      id: (mockAssets.length + 1).toString(),
+    // Check if asset with this serial number already exists
+    const existingAsset = db.prepare('SELECT id FROM assets WHERE serialNumber = ?').get(serial_number);
+
+    if (existingAsset) {
+      return NextResponse.json(
+        { error: 'An asset with this serial number already exists' },
+        { status: 400 }
+      );
+    }
+
+    // Insert the new asset
+    const now = Date.now();
+    const assetId = `asset-${uuidv4()}`;
+    
+    db.prepare(
+      'INSERT INTO assets (id, name, model, serialNumber, location, status, department, building, room, custodianId, custodianName, purchaseDate, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).run(
+      assetId,
       name,
-      model: model || '',
-      serial: serial_number,
-      status: status || 'OPERATIONAL',
-      location: location || '',
-      imageUrl: 'https://via.placeholder.com/300x200.png?text=Asset',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+      model || null,
+      serial_number,
+      location || null,
+      status,
+      department || null,
+      building || null,
+      room || null,
+      custodianId || null,
+      custodianName || null,
+      body.purchaseDate ? new Date(body.purchaseDate).getTime() : null,
+      now,
+      now
+    );
 
-    mockAssets.push(newAsset);
+    // Log the activity
+    const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    db.prepare(
+      'INSERT INTO activity_log (id, userId, action, entityType, entityId, details, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(logId, 'admin', 'create', 'asset', assetId, `Asset ${name} created with serial ${serial_number}`, now);
 
-    // Transform for frontend
+    // Get the created asset
+    const newAsset: any = db.prepare('SELECT * FROM assets WHERE id = ?').get(assetId);
+    db.close();
+    
     const transformedAsset = {
-      ...newAsset,
-      status: newAsset.status === 'OPERATIONAL' ? 'active' : 
-              newAsset.status === 'IN_MAINTENANCE' ? 'in-repair' : 'inactive'
+      id: newAsset.id,
+      name: newAsset.name,
+      model: newAsset.model || '',
+      serial: newAsset.serialNumber,
+      location: newAsset.location || '',
+      status: transformStatus(newAsset.status),
+      department: newAsset.department || '',
+      building: newAsset.building || '',
+      room: newAsset.room || '',
+      custodianId: newAsset.custodianId,
+      custodianName: newAsset.custodianName || '',
+      createdAt: new Date(newAsset.createdAt).toISOString(),
+      updatedAt: newAsset.updatedAt ? new Date(newAsset.updatedAt).toISOString() : null
     };
 
     return NextResponse.json(transformedAsset, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create asset' }, { status: 500 });
+    console.error('Error creating asset:', error);
+    return NextResponse.json(
+      { error: 'Failed to create asset' }, 
+      { status: 500 }
+    );
   }
 }

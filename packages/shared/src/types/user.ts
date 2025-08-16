@@ -7,12 +7,7 @@ export type Role =
   | 'MAINTENANCE' 
   | 'SUPERVISOR' 
   | 'ENGINEER' 
-  | 'MANAGER'
-  | 'admin'
-  | 'asset_manager'
-  | 'technician'
-  | 'client'
-  | 'supervisor';
+  | 'MANAGER';
 
 export interface User {
   id: string;
