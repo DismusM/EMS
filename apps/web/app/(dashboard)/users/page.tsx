@@ -580,7 +580,7 @@ export default function UserManagementPage() {
                   </Button>
                   <Button
                     color="#1e88e5"
-                    onClick={handleSaveUser}
+                    onClick={handleUpdateUser}
                   >
                     Save Changes
                   </Button>

@@ -50,8 +50,11 @@ export default function DashboardPage() {
           'Authorization': `Bearer ${authState.token}`,
         },
         body: JSON.stringify({
-          ...assetData,
+          name: assetData.name,
+          model: assetData.model,
           serial_number: assetData.serialNumber,
+          location: assetData.location,
+          status: assetData.status.toUpperCase(),
         }),
       });
 

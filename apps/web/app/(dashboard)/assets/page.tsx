@@ -377,16 +377,6 @@ export default function AssetsPage() {
                           View Details
                         </Button>
                         <Button
-                          variant="light"
-                          color="orange"
-                          size="sm"
-                          leftSection={<IconEdit size="1rem" />}
-                          style={{ flex: 1 }}
-                          onClick={() => handleEditAsset(asset)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
                           variant="outline"
                           color="#1e88e5"
                           size="sm"
@@ -429,14 +419,6 @@ export default function AssetsPage() {
                         size="sm"
                       >
                         <IconEye size="1rem" />
-                      </ActionIcon>
-                      <ActionIcon
-                        variant="outline"
-                        color="orange"
-                        size="sm"
-                        onClick={() => handleEditAsset(asset)}
-                      >
-                        <IconEdit size="1rem" />
                       </ActionIcon>
                       <ActionIcon
                         variant="outline"
